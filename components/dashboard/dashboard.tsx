@@ -124,7 +124,7 @@ export default function DashboardCard() {
 
                     </div>
 
-                    <h3 className="text-xl font-bold text-zinc-600 dark:text-zinc-200">{selecionado === "HOJE" ? "Jogos de hoje" : "Todos os jogos"}</h3>
+                    <h3 className="text-xl font-bold text-zinc-600 dark:text-zinc-200 my-1">{selecionado === "HOJE" ? "Jogos de hoje" : "Todos os jogos"}</h3>
 
                     {jogos.map((jogo: any) => (
                         <PartidaCard
