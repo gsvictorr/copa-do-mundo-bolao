@@ -6,8 +6,17 @@ import { Badge } from "../ui/badge";
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Users } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import { getPalpitesByPartida } from "@/services/palpites";
+
+
+interface PalpiteOutro {
+    id: string;
+    criadoPorNome: string;
+    resultado1: number;
+    resultado2: number;
+}
 
 interface Props {
     partida: any;
@@ -28,6 +37,11 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
     const [salvando, setSalvando] = useState(false);
     const [salvo, setSalvo] = useState(!!palpite);
 
+    // Palpites dos outros
+    const [palpitesOutros, setPalpitesOutros] = useState<PalpiteOutro[]>([]);
+    const [mostrandoOutros, setMostrandoOutros] = useState(false);
+    const [carregandoOutros, setCarregandoOutros] = useState(false);
+
     function getStatus(status: string) {
         switch (status) {
             case "TIMED": return "Não iniciado";
@@ -42,7 +56,25 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
     const data = new Date(partida.utcDate);
     const encerrada = partida.status === "FINISHED";
     const acontecendo = partida.status === "IN_PLAY" || partida.status === "PAUSED"
-    const podeApostar = partida.status === "TIMED";
+
+
+    async function togglePalpitesOutros() {
+        if (mostrandoOutros) {
+            setMostrandoOutros(false);
+            return;
+        }
+
+        setCarregandoOutros(true);
+        try {
+            const todos = await getPalpitesByPartida(String(partida.id));
+            // Filtra o próprio usuário
+            const outros = todos.filter((p: any) => p.criadoPorId !== userId) as PalpiteOutro[];
+            setPalpitesOutros(outros);
+            setMostrandoOutros(true);
+        } finally {
+            setCarregandoOutros(false);
+        }
+    }
 
     async function salvarPalpite() {
         if (!r1 || !r2) return;
@@ -154,6 +186,46 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
 
 
                 }
+            </div>
+
+            <div className="mt-3 border-t pt-3">
+                <button
+                    onClick={togglePalpitesOutros}
+                    className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                    {carregandoOutros
+                        ? <Loader2 size={14} className="animate-spin" />
+                        : <Users size={14} />}
+                    {mostrandoOutros ? "Ocultar palpites" : "Ver palpites dos outros"}
+                    {mostrandoOutros ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+
+                {mostrandoOutros && (
+                    <div className="mt-3 flex flex-col gap-2">
+                        {palpitesOutros.length === 0 ? (
+                            <p className="text-xs text-center text-muted-foreground">
+                                Nenhum outro palpite registrado.
+                            </p>
+                        ) : (
+                            palpitesOutros.map(p => (
+                                <div
+                                    key={p.id}
+                                    className="flex items-center justify-between bg-muted/40 rounded-lg px-4 py-2 text-sm"
+                                >
+                                    <span className="font-medium">{p.criadoPorNome}</span>
+                                    <div className="flex items-center gap-2">
+                                        {partida.homeTeam.crest ? <Image src={partida.homeTeam.crest} width={20} height={20} alt="" /> : <Skeleton className="w-[20px] h-[20px]" />}
+                                        <span className="font-bold tabular-nums">
+                                            {p.resultado1} x {p.resultado2}
+                                        </span>
+                                        {partida.awayTeam.crest ? <Image src={partida.awayTeam.crest} width={20} height={20} alt="" /> : <Skeleton className="w-[20px] h-[20px]" />}
+
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
