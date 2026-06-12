@@ -11,7 +11,7 @@ import { Skeleton } from "../ui/skeleton";
 
 interface Props {
     partida: any;
-    palpite?: { resultado1: number; resultado2: number } | null;
+    palpite?: { resultado1: number; resultado2: number, criadoEm: Date } | null;
     userId: string;
     userName: string;
     onPalpiteSalvo: (idPartida: string, r1: number, r2: number) => void;
@@ -20,6 +20,11 @@ interface Props {
 export default function PartidaCard({ partida, palpite, userId, userName, onPalpiteSalvo }: Props) {
     const [r1, setR1] = useState<string>(palpite?.resultado1?.toString() ?? "");
     const [r2, setR2] = useState<string>(palpite?.resultado2?.toString() ?? "");
+    const [criadoEm, setCriadoEm] = useState<Date | null>(
+        palpite?.criadoEm
+            ? (palpite.criadoEm as any)?.toDate?.() ?? new Date(palpite.criadoEm)
+            : null
+    );
     const [salvando, setSalvando] = useState(false);
     const [salvo, setSalvo] = useState(!!palpite);
 
@@ -36,6 +41,7 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
 
     const data = new Date(partida.utcDate);
     const encerrada = partida.status === "FINISHED";
+    const acontecendo = partida.status === "IN_PLAY" || partida.status === "PAUSED"
     const podeApostar = partida.status === "TIMED";
 
     async function salvarPalpite() {
@@ -87,12 +93,12 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
                 <div className="flex justify-end items-center gap-3">
                     {partida.awayTeam.name}
                     {partida.awayTeam.crest ? <Image src={partida.awayTeam.crest} width={40} height={40} alt="" /> : <Skeleton className="w-[40px] h-[40px]" />}
-              
+
                 </div>
             </div>
 
             <div className="text-center font-bold text-2xl mt-2">
-                {encerrada
+                {encerrada || acontecendo
                     ? `${partida.score.fullTime.home} x ${partida.score.fullTime.away}`
                     : ""}
             </div>
@@ -101,9 +107,15 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
             <div className="mt-4 border-t pt-4">
                 <p className="text-sm text-center text-muted-foreground mb-2">Seu palpite</p>
                 {salvo ? (
-                    <p className="text-center font-semibold text-green-600">
-                        {r1} x {r2}
-                    </p>
+                    <div className="flex flex-col">
+                        <p className="text-center font-semibold text-green-600">
+                            {r1} x {r2}
+                        </p>
+                        <p className="text-xs text-center text-muted-foreground mt-1">
+                            Palpite dado em {criadoEm?.toLocaleDateString("pt-BR")}{" "}
+                            às {criadoEm?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                    </div>
                 ) :
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-center items-center gap-3">

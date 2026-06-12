@@ -27,30 +27,15 @@ export async function GET() {
         const palpitesSnap = await getDocs(collection(db, "palpites"));
         const palpites = palpitesSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
-        // 2. Busca jogos de hoje da football-data
+        // 2. Busca todos os jogos
         const res = await fetch(
             "https://api.football-data.org/v4/competitions/WC/matches",
             { headers: { "X-Auth-Token": process.env.API_FUTEBOL_TOKEN! } }
         );
         const { matches } = await res.json();
 
-        const hoje = new Date();
-
-        const jogosHoje = matches.filter((match: any) => {
-            const dataJogo = new Date(match.utcDate);
-
-            return (
-                dataJogo.toLocaleDateString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
-                }) ===
-                hoje.toLocaleDateString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
-                })
-            );
-        });
-
         // Apenas partidas encerradas
-        const encerradas = jogosHoje.filter((m: any) => m.status === "FINISHED");
+        const encerradas = matches.filter((m: any) => m.status === "FINISHED");
         const mapaJogos: Record<string, any> = {};
         encerradas.forEach((m: any) => { mapaJogos[String(m.id)] = m; });
 

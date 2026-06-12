@@ -94,7 +94,7 @@ export default function DashboardCard() {
     function handlePalpiteSalvo(idPartida: string, r1: number, r2: number) {
         setPalpitesMap(prev => ({
             ...prev,
-            [idPartida]: { resultado1: r1, resultado2: r2 },
+            [idPartida]: { resultado1: r1, resultado2: r2},
         }));
     }
     return (
