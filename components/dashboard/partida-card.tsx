@@ -138,7 +138,7 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
                     </span>
 
                 </div>
-                <Badge className={getStatus(partida.status) === "Não iniciado" ? "bg-green-500 dark:bg-green-600 text-white dark:text-white" : ""}>{getStatus(partida.status)}</Badge>
+                <Badge className={getStatus(partida.status) === "Ao vivo" ? "bg-green-500 dark:bg-green-600 text-white dark:text-white" : ""}>{getStatus(partida.status)}</Badge>
 
             </div>
 
