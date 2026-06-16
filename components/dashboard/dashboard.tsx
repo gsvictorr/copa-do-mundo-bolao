@@ -9,6 +9,7 @@ import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "../ui/skeleton";
 import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 
 export default function DashboardCard() {
@@ -125,6 +126,11 @@ export default function DashboardCard() {
                     </div>
 
                     <h3 className="text-lg font-bold text-zinc-600 dark:text-zinc-200 my-1">{selecionado === "HOJE" ? "Jogos de hoje" : "Todos os jogos"}</h3>
+                    
+                    <div className="flex items-center gap-2">
+                        <Badge className="bg-green-500 dark:bg-green-600 text-white dark:text-white rounded-sm">3 pontos</Badge>
+                        <Badge className="bg-yellow-500 dark:bg-yellow-500 text-white dark:text-white rounded-sm">1 ponto</Badge>
+                    </div>
 
                     {jogos.map((jogo: any) => (
                         <PartidaCard

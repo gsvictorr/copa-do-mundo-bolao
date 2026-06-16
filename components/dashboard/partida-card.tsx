@@ -100,6 +100,32 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
         }
     }
 
+
+    function getCorPalpite(p1: number, p2: number, status: string, rHome?: number, rAway?: number) {
+        // Só avalia se o jogo já tem placar (em andamento ou encerrado)
+        if (status !== "IN_PLAY" && status !== "PAUSED" && status !== "FINISHED") {
+            return "text-zinc-600 dark:text-zinc-200";
+        }
+        if (rHome === undefined || rAway === undefined) {
+            return "text-zinc-600 dark:text-zinc-200";
+        }
+
+        // Placar exato
+        if (p1 === rHome && p2 === rAway) {
+            return "text-green-500 dark:text-green-600";
+        }
+
+        // Resultado certo (vencedor ou empate)
+        const palpiteResultado = p1 > p2 ? "home" : p1 < p2 ? "away" : "draw";
+        const realResultado = rHome > rAway ? "home" : rHome < rAway ? "away" : "draw";
+
+        if (palpiteResultado === realResultado) {
+            return "text-yellow-500 dark:text-yellow-400";
+        }
+
+        return "text-zinc-600 dark:text-zinc-200";
+    }
+
     return (
         <div className="border rounded-xl p-5 shadow-md">
 
@@ -112,7 +138,7 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
                     </span>
 
                 </div>
-                <Badge>{getStatus(partida.status)}</Badge>
+                <Badge className={getStatus(partida.status) === "Não iniciado" ? "bg-green-500 dark:bg-green-600 text-white dark:text-white" : ""}>{getStatus(partida.status)}</Badge>
 
             </div>
 
@@ -140,7 +166,13 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
                 <p className="text-sm text-center text-muted-foreground mb-2">Seu palpite</p>
                 {salvo ? (
                     <div className="flex flex-col">
-                        <p className="text-center font-semibold text-green-600">
+                        <p className={`text-center font-semibold text-xl ${getCorPalpite(
+                            Number(r1),
+                            Number(r2),
+                            partida.status,
+                            partida.score?.fullTime?.home,
+                            partida.score?.fullTime?.away
+                        )}`}>
                             {r1} x {r2}
                         </p>
                         <p className="text-xs text-center text-muted-foreground mt-1">
@@ -150,38 +182,44 @@ export default function PartidaCard({ partida, palpite, userId, userName, onPalp
                     </div>
                 ) :
                     <div className="flex flex-col gap-2">
-                        <div className="flex justify-center items-center gap-3">
+                        {acontecendo || encerrada ?
+                            <p className="text-xs text-center text-muted-foreground">Não é possível dar palpites em partidas em andamento ou encerradas.</p>
+                            :
+                            <div className="flex flex-col gap-2">
+                                <div className="flex justify-center items-center gap-3">
 
-                            <Input
-                                type="number"
-                                min={0}
-                                value={r1}
-                                disabled={salvando}
-                                onChange={e => setR1(e.target.value)}
-                                className="text-center"
-                                placeholder="0"
-                            />
-                            <span className="font-bold">x</span>
-                            <Input
-                                type="number"
-                                min={0}
-                                disabled={salvando}
-                                value={r2}
-                                onChange={e => setR2(e.target.value)}
-                                className="text-center"
-                                placeholder="0"
-                            />
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        value={r1}
+                                        disabled={salvando}
+                                        onChange={e => setR1(e.target.value)}
+                                        className="text-center"
+                                        placeholder="0"
+                                    />
+                                    <span className="font-bold">x</span>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        disabled={salvando}
+                                        value={r2}
+                                        onChange={e => setR2(e.target.value)}
+                                        className="text-center"
+                                        placeholder="0"
+                                    />
 
 
-                        </div>
-                        <Button
-                            onClick={salvarPalpite}
-                            disabled={salvando || !r1 || !r2}
-                            size={"lg"}
-                            className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 dark:text-white"
-                        >
-                            {salvando ? <span className="flex items-center gap-2"><Loader2 className="animate-spin" /> Salvando...</span> : "Salvar"}
-                        </Button>
+                                </div>
+                                <Button
+                                    onClick={salvarPalpite}
+                                    disabled={salvando || !r1 || !r2}
+                                    size={"lg"}
+                                    className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 dark:text-white"
+                                >
+                                    {salvando ? <span className="flex items-center gap-2"><Loader2 className="animate-spin" /> Salvando...</span> : "Salvar"}
+                                </Button>
+                            </div>
+                        }
                     </div>
 
 
